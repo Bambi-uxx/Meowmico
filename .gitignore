@@ -1,0 +1,24 @@
+# Environment variables (NEVER commit this)
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Go
+backend/bin/
+*.exe
+
+# Desktop
+desktop/__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
