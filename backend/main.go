@@ -13,6 +13,8 @@ import (
 func main() {
 	db.Init()
 
+	handlers.BroadcastFunc = hub.broadcast
+
 	port := os.Getenv("BACKEND_PORT")
 	if port == "" {
 		port = "8080"
@@ -35,6 +37,7 @@ func main() {
 			handlers.GetMessages(w, r)
 		}
 	})
+	http.HandleFunc("/ws", wsHandler)
 
 	log.Printf("Meowmico backend starting on port %s...", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {

@@ -8,6 +8,8 @@ import (
 	"github.com/Bambi-uxx/Meowmico/backend/db"
 )
 
+var BroadcastFunc func([]byte)
+
 type Event struct {
 	ID        int       `json:"id"`
 	Channel   string    `json:"channel"`
@@ -22,6 +24,12 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var event Event
+	// Broadcast to WebSocket clients
+	if BroadcastFunc != nil {
+		data, _ := json.Marshal(event)
+		BroadcastFunc(data)
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
