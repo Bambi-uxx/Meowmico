@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Bambi-uxx/Meowmico/backend/db"
+	"github.com/Bambi-uxx/Meowmico/backend/handlers"
 )
 
 func main() {
@@ -20,8 +21,22 @@ func main() {
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Meowmico backend is alive! 🐱")
 	})
+	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handlers.CreateEvent(w, r)
+		} else {
+			handlers.GetEvents(w, r)
+		}
+	})
+	http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handlers.CreateMessage(w, r)
+		} else {
+			handlers.GetMessages(w, r)
+		}
+	})
 
-	log.Printf("🐱 Meowmico backend starting on port %s...", port)
+	log.Printf("Meowmico backend starting on port %s...", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
