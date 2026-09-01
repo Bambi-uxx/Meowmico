@@ -21,7 +21,7 @@ func main() {
 	}
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Meowmico backend is alive! 🐱")
+		fmt.Fprintln(w, "Meowmico backend is alive!")
 	})
 	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {

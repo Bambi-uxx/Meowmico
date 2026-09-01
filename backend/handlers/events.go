@@ -24,12 +24,6 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var event Event
-	// Broadcast to WebSocket clients
-	if BroadcastFunc != nil {
-		data, _ := json.Marshal(event)
-		BroadcastFunc(data)
-	}
-
 	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -47,6 +41,12 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	id, _ := result.LastInsertId()
 	event.ID = int(id)
 	event.CreatedAt = time.Now()
+
+	// Broadcast to WebSocket clients AFTER saving
+	if BroadcastFunc != nil {
+		data, _ := json.Marshal(event)
+		BroadcastFunc(data)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
