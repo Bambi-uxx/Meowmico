@@ -27,7 +27,7 @@ func (h *Hub) register(conn *websocket.Conn) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.clients[conn] = true
-	log.Println("🐱 New client connected! Total:", len(h.clients))
+	log.Println("New client connected! Total:", len(h.clients))
 }
 
 func (h *Hub) unregister(conn *websocket.Conn) {

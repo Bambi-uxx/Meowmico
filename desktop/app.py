@@ -1,13 +1,15 @@
 import tkinter as tk
-from PIL import Image, ImageTk, ImageSequence
+from PIL import Image, ImageTk
 import asyncio
 import websockets
 import json
 import threading
 import os
 import time
+import urllib.request
 
 BACKEND_WS = "ws://localhost:8080/ws"
+BACKEND_URL = "http://localhost:8080"
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
 
 class MeowmicoApp:
@@ -17,11 +19,8 @@ class MeowmicoApp:
         self.root.geometry("300x420")
         self.root.configure(bg="#16131F")
         self.root.resizable(False, False)
-
-        # Keep window on top
         self.root.attributes("-topmost", True)
 
-        # Current animation state
         self.current_anim = "idle"
         self.frames = {}
         self.frame_index = 0
@@ -34,7 +33,6 @@ class MeowmicoApp:
         self._check_idle()
 
     def _build_ui(self):
-        # Title bar
         title = tk.Label(
             self.root, text="MEOWMICO",
             bg="#4A3F4B", fg="#F0D9E4",
@@ -43,7 +41,6 @@ class MeowmicoApp:
         )
         title.pack(fill=tk.X)
 
-        # Cat canvas
         self.canvas = tk.Canvas(
             self.root, width=160, height=160,
             bg="#16131F", highlightthickness=0
@@ -51,7 +48,6 @@ class MeowmicoApp:
         self.canvas.pack(pady=10)
         self.cat_image = self.canvas.create_image(80, 80, anchor=tk.CENTER)
 
-        # Speech bubble
         self.bubble = tk.Label(
             self.root,
             text="purrr... watching your servers~",
@@ -63,7 +59,6 @@ class MeowmicoApp:
         )
         self.bubble.pack(fill=tk.X, padx=16)
 
-        # Events label
         self.events_label = tk.Label(
             self.root, text="0 events",
             bg="#16131F", fg="#8D6C79",
@@ -71,7 +66,6 @@ class MeowmicoApp:
         )
         self.events_label.pack(pady=4)
 
-        # Input row
         input_frame = tk.Frame(self.root, bg="#16131F")
         input_frame.pack(fill=tk.X, padx=16, pady=4)
 
@@ -98,7 +92,6 @@ class MeowmicoApp:
         )
         send_btn.pack(side=tk.RIGHT, padx=(6, 0))
 
-        # Status
         self.status_label = tk.Label(
             self.root, text="connecting...",
             bg="#16131F", fg="#C1A0AC",
@@ -144,8 +137,32 @@ class MeowmicoApp:
         if not text:
             return
         self.input_var.set("")
-        self.set_animation("happy", f"meow! you said: {text[:40]}")
-        self.root.after(3000, lambda: self.set_animation("idle"))
+        self.set_animation("happy", "thinking...")
+        # Call backend in a separate thread so UI doesn't freeze
+        threading.Thread(
+            target=self._call_chat,
+            args=(text,),
+            daemon=True
+        ).start()
+
+    def _call_chat(self, text):
+        try:
+            payload = json.dumps({"message": text}).encode("utf-8")
+            req = urllib.request.Request(
+                f"{BACKEND_URL}/chat",
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                reply = data.get("reply", "...")
+                self.root.after(0, lambda: self.set_animation("happy", reply))
+                self.root.after(5000, lambda: self.set_animation("idle"))
+        except Exception as e:
+            self.root.after(0, lambda: self.set_animation(
+                "idle", f"something broke. classic. ({str(e)[:30]})"
+            ))
 
     def _on_discord_event(self, data):
         self.event_count += 1

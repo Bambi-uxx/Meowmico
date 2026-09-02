@@ -38,6 +38,7 @@ func main() {
 		}
 	})
 	http.HandleFunc("/ws", wsHandler)
+	http.HandleFunc("/chat", handlers.Chat)
 
 	log.Printf("Meowmico backend starting on port %s...", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {

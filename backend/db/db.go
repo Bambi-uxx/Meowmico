@@ -16,6 +16,10 @@ func Init() {
 		log.Fatal("Failed to open database:", err)
 	}
 
+	if err = DB.Ping(); err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+
 	createTables()
 	log.Println("Database connected")
 }
