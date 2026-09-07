@@ -8,9 +8,11 @@ import (
 
 	"github.com/Bambi-uxx/Meowmico/backend/db"
 	"github.com/Bambi-uxx/Meowmico/backend/handlers"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load()
 	db.Init()
 
 	handlers.BroadcastFunc = hub.broadcast
